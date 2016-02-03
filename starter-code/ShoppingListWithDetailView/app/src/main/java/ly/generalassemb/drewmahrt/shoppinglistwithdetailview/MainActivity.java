@@ -3,7 +3,6 @@ package ly.generalassemb.drewmahrt.shoppinglistwithdetailview;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -33,12 +32,23 @@ public class MainActivity extends AppCompatActivity {
         dbSetup.getReadableDatabase();
 
         mShoppingListView = (ListView)findViewById(R.id.shopping_list_view);
-        mHelper = new ShoppingSQLiteOpenHelper(MainActivity.this);
+        mHelper = ShoppingSQLiteOpenHelper.getInstance(MainActivity.this);
 
         Cursor cursor = mHelper.getShoppingList();
 
         mCursorAdapter = new SimpleCursorAdapter(this,android.R.layout.simple_list_item_1,cursor,new String[]{ShoppingSQLiteOpenHelper.COL_ITEM_NAME},new int[]{android.R.id.text1},0);
         mShoppingListView.setAdapter(mCursorAdapter);
+
+        mShoppingListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                Cursor currentCursor = mCursorAdapter.getCursor();
+                currentCursor.moveToPosition(position);
+                intent.putExtra("ID", currentCursor.getInt(currentCursor.getColumnIndex(ShoppingSQLiteOpenHelper.COL_ID)));
+                startActivity(intent);
+            }
+        });
 
         handleIntent(getIntent());
     }

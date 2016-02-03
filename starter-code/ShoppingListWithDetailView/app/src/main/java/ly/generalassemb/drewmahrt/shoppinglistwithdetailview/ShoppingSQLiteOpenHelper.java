@@ -41,7 +41,16 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
                     COL_ITEM_PRICE + " TEXT, " +
                     COL_ITEM_TYPE + " TEXT )";
 
-    public ShoppingSQLiteOpenHelper(Context context) {
+    private static ShoppingSQLiteOpenHelper mInstance;
+
+    public static ShoppingSQLiteOpenHelper getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new ShoppingSQLiteOpenHelper(context.getApplicationContext());
+        }
+        return mInstance;
+    }
+
+    private ShoppingSQLiteOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -108,5 +117,61 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
                 null); // h. limit
 
         return cursor;
+    }
+
+    public String getNameById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_ITEM_NAME},
+                COL_ID+"=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(COL_ITEM_NAME));
+        } else {
+            return "Error: item not found";
+        }
+    }
+
+    public String getDescriptionById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_ITEM_DESCRIPTION},
+                COL_ID+"=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(COL_ITEM_DESCRIPTION));
+        } else {
+            return "Error: item not found";
+        }
+    }
+
+    public String getPriceById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_ITEM_PRICE},
+                COL_ID+"=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(COL_ITEM_PRICE));
+        } else {
+            return "Error: item not found";
+        }
+    }
+
+    public String getTypeById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_ITEM_TYPE},
+                COL_ID+"=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(COL_ITEM_TYPE));
+        } else {
+            return "Error: item not found";
+        }
     }
 }
