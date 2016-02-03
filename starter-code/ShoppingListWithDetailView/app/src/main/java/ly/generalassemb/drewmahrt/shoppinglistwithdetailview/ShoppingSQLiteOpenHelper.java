@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
     private static final String TAG = ShoppingSQLiteOpenHelper.class.getCanonicalName();
 
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     public static final String DATABASE_NAME = "SHOPPING_DB";
     public static final String SHOPPING_LIST_TABLE_NAME = "SHOPPING_LIST";
 
@@ -29,6 +29,8 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
     public static final String COL_ITEM_PRICE = "PRICE";
     public static final String COL_ITEM_DESCRIPTION = "DESCRIPTION";
     public static final String COL_ITEM_TYPE = "TYPE";
+    public static final String COL_IS_ON_SALE = "IS_ON_SALE";
+    public static final String COL_SALE_PRICE = "SALE_PRICE";
 
     public static final String[] SHOPPING_COLUMNS = {COL_ID,COL_ITEM_NAME,COL_ITEM_DESCRIPTION,COL_ITEM_PRICE,COL_ITEM_TYPE};
 
@@ -63,6 +65,19 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + SHOPPING_LIST_TABLE_NAME);
         this.onCreate(db);
+        db.execSQL("ALTER TABLE " + SHOPPING_LIST_TABLE_NAME + " ADD COLUMN " +
+                COL_IS_ON_SALE + " INT");
+        db.execSQL("ALTER TABLE " + SHOPPING_LIST_TABLE_NAME + " ADD COLUMN " +
+                COL_SALE_PRICE + " TEXT");
+        db.execSQL("UPDATE " + SHOPPING_LIST_TABLE_NAME + " SET " +
+                COL_IS_ON_SALE + " = 0");
+        db.execSQL("UPDATE " + SHOPPING_LIST_TABLE_NAME + " SET " +
+                COL_IS_ON_SALE + " = 1 WHERE " + COL_ID + " % 2 = 0");
+        db.execSQL("UPDATE " + SHOPPING_LIST_TABLE_NAME + " SET " +
+                COL_SALE_PRICE + " = "  + COL_ITEM_PRICE);
+        db.execSQL("UPDATE " + SHOPPING_LIST_TABLE_NAME + " SET " +
+                COL_SALE_PRICE + " = cast((cast(" + COL_ITEM_PRICE + " AS REAL) * 0.8) AS TEXT)" +
+                " WHERE " + COL_IS_ON_SALE + " = 1");
     }
 
     //Add new itinerary list
@@ -170,6 +185,34 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
                 null, null, null, null);
         if (cursor.moveToFirst()) {
             return cursor.getString(cursor.getColumnIndex(COL_ITEM_TYPE));
+        } else {
+            return "Error: item not found";
+        }
+    }
+
+    public boolean isOnSaleById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_IS_ON_SALE},
+                COL_ID + "=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return (cursor.getInt(cursor.getColumnIndex(COL_IS_ON_SALE)) == 1);
+        } else {
+            return false;
+        }
+    }
+
+    public String getSalePriceById(int id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(SHOPPING_LIST_TABLE_NAME,
+                new String[]{COL_SALE_PRICE},
+                COL_ID + "=?",
+                new String[]{String.valueOf(id)},
+                null, null, null, null);
+        if (cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(COL_SALE_PRICE));
         } else {
             return "Error: item not found";
         }

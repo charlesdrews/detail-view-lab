@@ -10,6 +10,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 public class DetailActivity extends AppCompatActivity {
 
     @Override
@@ -25,6 +27,8 @@ public class DetailActivity extends AppCompatActivity {
         TextView descriptionView = (TextView) findViewById(R.id.detail_description);
         TextView priceView = (TextView) findViewById(R.id.detail_price);
         TextView typeView = (TextView) findViewById(R.id.detail_type);
+        TextView isOnSaleView = (TextView) findViewById(R.id.detail_is_on_sale);
+        TextView salePriceView = (TextView) findViewById(R.id.detail_sale_price);
 
         int id = getIntent().getIntExtra("ID", -1);
         if (id >= 0) {
@@ -33,6 +37,8 @@ public class DetailActivity extends AppCompatActivity {
             descriptionView.setText(helper.getDescriptionById(id));
             priceView.setText(helper.getPriceById(id));
             typeView.setText(helper.getTypeById(id));
+            isOnSaleView.setText(Boolean.toString(helper.isOnSaleById(id)));
+            salePriceView.setText(helper.getSalePriceById(id));
         } else {
             nameView.setText("Error: no item ID");
         }
