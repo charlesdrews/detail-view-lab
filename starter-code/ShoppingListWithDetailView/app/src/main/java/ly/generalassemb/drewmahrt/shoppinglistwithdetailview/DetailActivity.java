@@ -33,12 +33,13 @@ public class DetailActivity extends AppCompatActivity {
         int id = getIntent().getIntExtra("ID", -1);
         if (id >= 0) {
             ShoppingSQLiteOpenHelper helper = ShoppingSQLiteOpenHelper.getInstance(DetailActivity.this);
-            nameView.setText(helper.getNameById(id));
-            descriptionView.setText(helper.getDescriptionById(id));
-            priceView.setText(helper.getPriceById(id));
-            typeView.setText(helper.getTypeById(id));
-            isOnSaleView.setText(Boolean.toString(helper.isOnSaleById(id)));
-            salePriceView.setText(helper.getSalePriceById(id));
+
+            nameView.setText("Name: " + helper.getNameById(id));
+            descriptionView.setText("Description: " + helper.getDescriptionById(id));
+            priceView.setText("Price: " + helper.getPriceById(id));
+            typeView.setText("Type: " + helper.getTypeById(id));
+            isOnSaleView.setText("On sale? " + Boolean.toString(helper.isOnSaleById(id)));
+            salePriceView.setText("Sale price: " + helper.getSalePriceById(id));
         } else {
             nameView.setText("Error: no item ID");
         }
