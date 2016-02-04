@@ -1,5 +1,6 @@
 package ly.generalassemb.drewmahrt.shoppinglistwithdetailview;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.Resources;
@@ -48,6 +49,11 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
     public static ShoppingSQLiteOpenHelper getInstance(Context context) {
         if (mInstance == null) {
             mInstance = new ShoppingSQLiteOpenHelper(context.getApplicationContext());
+
+            // this deletes the table and recreates it with two extra columns
+            // clumsy, I know, but I don't know where the code is that initializes
+            // the db with it's original columns, so I can't modify that.
+            mInstance.initializeDataForTesting();
         }
         return mInstance;
     }
@@ -65,6 +71,7 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + SHOPPING_LIST_TABLE_NAME);
         this.onCreate(db);
+        /*
         db.execSQL("ALTER TABLE " + SHOPPING_LIST_TABLE_NAME + " ADD COLUMN " +
                 COL_IS_ON_SALE + " INT");
         db.execSQL("ALTER TABLE " + SHOPPING_LIST_TABLE_NAME + " ADD COLUMN " +
@@ -78,15 +85,20 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
         db.execSQL("UPDATE " + SHOPPING_LIST_TABLE_NAME + " SET " +
                 COL_SALE_PRICE + " = cast((cast(" + COL_ITEM_PRICE + " AS REAL) * 0.8) AS TEXT)" +
                 " WHERE " + COL_IS_ON_SALE + " = 1");
+        */
     }
 
     //Add new itinerary list
-    public long addItem(String name, String description, String price, String type){
+    public long addItem(String name, String description, String price, String type,
+                        boolean isOnSale, String salePrice)
+    {
         ContentValues values = new ContentValues();
         values.put(COL_ITEM_NAME, name);
         values.put(COL_ITEM_DESCRIPTION, description);
         values.put(COL_ITEM_PRICE, price);
         values.put(COL_ITEM_TYPE, type);
+        values.put(COL_IS_ON_SALE, (isOnSale ? 1 : 0));
+        values.put(COL_SALE_PRICE, salePrice);
 
         SQLiteDatabase db = this.getWritableDatabase();
         long returnId = db.insert(SHOPPING_LIST_TABLE_NAME, null, values);
@@ -216,5 +228,26 @@ public class ShoppingSQLiteOpenHelper extends SQLiteOpenHelper{
         } else {
             return "Error: item not found";
         }
+    }
+
+    public void initializeDataForTesting() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + SHOPPING_LIST_TABLE_NAME);
+        db.execSQL("CREATE TABLE " + SHOPPING_LIST_TABLE_NAME + "(" +
+                        COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COL_ITEM_NAME + " TEXT, " +
+                        COL_ITEM_DESCRIPTION + " TEXT, " +
+                        COL_ITEM_PRICE + " TEXT, " +
+                        COL_ITEM_TYPE + " TEXT, " +
+                        COL_IS_ON_SALE + " INTEGER, " +
+                        COL_SALE_PRICE + " TEXT)"
+        );
+        addItem("Bread", "Whole Wheat Bread", "2.35", "Food", true, "2.30");
+        addItem("Milk", "1 Gallon Skim Milk", "3.50", "Dairy", false, "3.50");
+        addItem("Ice Cream", "Mint Chocolate Chip", "2.20", "Dairy", true, "1.95");
+        addItem("Paper Plates", "White Paper Plates", "7.50", "Dishes", false, "7.50");
+        addItem("Chicken Breasts", "Boneless Skinless", "2.30", "Poultry", true, "2.00");
+        addItem("Carrots", "Baby Carrots", "4.00", "Produce", false, "4.00");
+        addItem("Lettuce", "Iceberg", "3.14", "Produce", true, "2.85");
     }
 }
